@@ -32,6 +32,10 @@ public class Driver {
 	static String sampleFilename;
 	static String outputPath;
 	static Set<String> stopwords;
+	static final String WORDCOUNT_PATH = "wordcount";
+	static final String STOPWORDS_PATH = "stopwords";
+	static final String INDEX_PATH = "inverted_index";
+	static final String STOPWORD_THRESHOLD = "15000";
 	
 	public static void main(String[] args)
 			throws IOException, ClassNotFoundException, InterruptedException {
@@ -89,7 +93,7 @@ public class Driver {
 	    wcjob.setJobName("Get Word Count");
 	    TextInputFormat.addInputPath(wcjob, new Path(inputPath + "/" + sampleFilename));
 	    wcjob.setOutputFormatClass(TextOutputFormat.class);
-		TextOutputFormat.setOutputPath(wcjob, new Path(outputPath + "/wordcount"));
+		TextOutputFormat.setOutputPath(wcjob, new Path(outputPath + "/" + WORDCOUNT_PATH));
 		wcjob.setOutputKeyClass(Text.class);
 		wcjob.setOutputValueClass(IntWritable.class);
 		wcjob.waitForCompletion(true);
@@ -102,15 +106,15 @@ public class Driver {
 		Configuration conf2 = new Configuration();
 
 		//threshold that useful stopwords are found at for one file
-		conf2.set("threshold", "15000");
+		conf2.set("threshold", STOPWORD_THRESHOLD);
 	    Job swjob = Job.getInstance(conf2);  
 	    swjob.setJarByClass(Driver.class);
 	    swjob.setMapperClass(StopwordMapper.class);
 	    swjob.setReducerClass(StopwordReducer.class);
 	    swjob.setJobName("Find Stopwords");
-	    TextInputFormat.addInputPath(swjob, new Path(outputPath + "/wordcount"));
+	    TextInputFormat.addInputPath(swjob, new Path(outputPath + "/" + WORDCOUNT_PATH));
 	    swjob.setOutputFormatClass(TextOutputFormat.class);
-		TextOutputFormat.setOutputPath(swjob, new Path(outputPath + "/stopwords"));
+		TextOutputFormat.setOutputPath(swjob, new Path(outputPath + "/" + STOPWORDS_PATH));
 		swjob.setOutputKeyClass(Text.class);
 		swjob.setOutputValueClass(LongWritable.class);
 		swjob.waitForCompletion(true);
@@ -136,7 +140,7 @@ public class Driver {
 		indexjob.setOutputValueClass(Text.class);
 	    TextInputFormat.addInputPath(indexjob, new Path(inputPath));
 	    indexjob.setOutputFormatClass(TextOutputFormat.class);
-		TextOutputFormat.setOutputPath(indexjob, new Path(outputPath + "/inverted_index"));
+		TextOutputFormat.setOutputPath(indexjob, new Path(outputPath + "/" + INDEX_PATH));
 		indexjob.waitForCompletion(true);
 	    ControlledJob controlledJob3 = new ControlledJob(conf3);
 	    controlledJob3.setJob(indexjob);
@@ -145,7 +149,7 @@ public class Driver {
 
 	private static String processStopwordFiles() throws FileNotFoundException {
 		//loop through each file in the directory created by the Stopwords Job
-		  File dir = new File(outputPath + "/stopwords");
+		  File dir = new File(outputPath + "/" + STOPWORDS_PATH);
 		  File[] directoryListing = dir.listFiles();
 		  if (directoryListing != null) {
 			  //for each file in the directory (excluding success message)
