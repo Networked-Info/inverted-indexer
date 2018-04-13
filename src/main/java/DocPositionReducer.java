@@ -14,14 +14,15 @@ import org.apache.hadoop.mapreduce.Reducer;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
-public class DocPositionReducer extends Reducer<Text, Text, Text, Text>{
+public class DocPositionReducer extends Reducer<Text, Text, NullWritable, Text>{
 	
 	@Override
 	protected void reduce(Text key, Iterable<Text> values, Context context) 
 			throws IOException, InterruptedException {
 		
+		JSONObject result = new JSONObject();
 		Map<String, String> docPositionMap = new HashMap<>();
-		System.out.println("weird");
+		
 		for (Text indexAndPosition : values) {
 			String entry = indexAndPosition.toString();
 			String docID = entry.substring(0, entry.indexOf(":"));
@@ -31,15 +32,19 @@ public class DocPositionReducer extends Reducer<Text, Text, Text, Text>{
 			}
 		}
 		
-		ArrayList<String> list = new ArrayList<>();
+		JSONArray ja = new JSONArray();
 		for (String docID : docPositionMap.keySet()) {
-			list.add("{" + docID + ":" + docPositionMap.get(docID) + "}");
+			JSONObject obj = new JSONObject();
+			obj.put(docID, docPositionMap.get(docID));
+			ja.add(obj);
 		}
 		
-		context.write(new Text(key + "=>"), new Text(String.join(",", list)));
+		result.put(key.toString(), ja);
+		
+		context.write(NullWritable.get(), new Text(result.toString()));
 		
 		docPositionMap.clear();
-		list.clear();
+		ja.clear();
 	}
 
 }
