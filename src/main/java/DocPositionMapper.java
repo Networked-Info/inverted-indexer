@@ -45,8 +45,19 @@ public class DocPositionMapper extends Mapper<LongWritable, Text, Text, Text> {
 		//grab the docID from before first comma
 		String docID = entry.substring(0, entry.indexOf(","));
 
+		//title begins after second comma
+		int titleIdx = StringUtils.ordinalIndexOf(entry, ",", 2);
 		//content begins after third comma
 		int contentIdx = StringUtils.ordinalIndexOf(entry, ",", 3);
+		
+		String[] title = entry.substring(titleIdx, contentIdx).split("[ \\-—\\/.,;:]");
+		for (String word: title) {
+			if (!processWord(word).equals("")) {
+				wordPositionList.putIfAbsent(word, new ArrayList<String>());
+				wordPositionList.get(word).add("-1");
+			}
+		}
+		
 		String[] contentArr = entry.substring(contentIdx + 1).split("[ \\-—\\/.,;:]");
 		List<String> content = new ArrayList<String>(Arrays.asList(contentArr));
 
