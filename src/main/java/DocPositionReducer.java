@@ -28,14 +28,21 @@ public class DocPositionReducer extends Reducer<Text, Text, NullWritable, Text>{
 		for (Text indexAndPosition : values) {
 			String entry = indexAndPosition.toString();
 			String docID = entry.substring(0, entry.indexOf(":"));
-			String positions = entry.substring(entry.indexOf("["));
-			if (!docPositionMap.containsKey(docID)) {
-				docPositionMap.put(docID, positions);
+			String positions = entry.substring(entry.indexOf("[") + 1, entry.indexOf("]"));
+			String[] posArr = positions.split(",");
+			int count = posArr.length;
+			String first = "";
+			if (posArr[0].equals("-1")) {
+				count += 100;
+				first = "-1";
+				if (count > 1) first += "," + posArr[1];
+			} else {
+				first = posArr[0];
 			}
 			
-			int count = positions.split(",").length;
-			if (positions.contains("-1")) 
-				count += 100;
+			if (!docPositionMap.containsKey(docID)) {
+				docPositionMap.put(docID, first);
+			}
 			rankMap.putIfAbsent(count, new ArrayList<String>());
 			rankMap.get(count).add(docID);
 		}
@@ -44,6 +51,7 @@ public class DocPositionReducer extends Reducer<Text, Text, NullWritable, Text>{
 		for (int count: rankMap.descendingKeySet()) {
 			for (String docID: rankMap.get(count)) {
 				JSONObject obj = new JSONObject();
+				
 				obj.put(docID, docPositionMap.get(docID));
 				ja.add(obj);
 			}

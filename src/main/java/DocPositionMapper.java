@@ -50,29 +50,25 @@ public class DocPositionMapper extends Mapper<LongWritable, Text, Text, Text> {
 		//content begins after third comma
 		int contentIdx = StringUtils.ordinalIndexOf(entry, ",", 3);
 		
-		String[] title = entry.substring(titleIdx, contentIdx).split("[ \\-—\\/.,;:]");
+		String[] title = entry.substring(titleIdx + 1, contentIdx).split("[ \\-—\\/.,;:]");
 		for (String word: title) {
-			if (!processWord(word).equals("")) {
-				wordPositionList.putIfAbsent(word, new ArrayList<String>());
+			word = processWord(word);
+			if (!word.equals("") && !wordPositionList.containsKey(word)) {
+				wordPositionList.put(word, new ArrayList<String>());
 				wordPositionList.get(word).add("-1");
 			}
 		}
-		
-		String[] contentArr = entry.substring(contentIdx + 1).split("[ \\-—\\/.,;:]");
-		List<String> content = new ArrayList<String>(Arrays.asList(contentArr));
-
-		// record the position for each word
-		for (int i = 0; i < content.size(); i++) {
-			String word = content.get(i);
+		String[] content = entry.substring(contentIdx + 1).split("[ \\-—\\/.,;:]");
+		int n = content.length;
+		for (int i = 0; i < n; i++) {
+			String word = content[i];
 			word = processWord(word);
-			
-			// if word is not stopword record the position and docId
 			if (!word.equals("")) {
-				ArrayList<String> list = wordPositionList.containsKey(word)? wordPositionList.get(word) : new ArrayList<String>();
-				list.add(Integer.toString(i));
-				wordPositionList.put(word, list);
+				wordPositionList.putIfAbsent(word, new ArrayList<String>());
+				wordPositionList.get(word).add(String.valueOf(i));
 			}
 		}
+		
 		
 		// write the inverted index and position
 		for (String word : wordPositionList.keySet()) {
@@ -82,7 +78,6 @@ public class DocPositionMapper extends Mapper<LongWritable, Text, Text, Text> {
 		}
 		
 		wordPositionList.clear();
-		content.clear();
 		
 	}
 	

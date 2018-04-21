@@ -34,15 +34,18 @@ public class Driver {
 	static final String WORDCOUNT_PATH = "wordcount";
 	static final String STOPWORDS_PATH = "stopwords";
 	static final String INDEX_PATH = "inverted_index";
-	static final String STOPWORD_THRESHOLD = "15000";
+	static final String STOPWORD_THRESHOLD = "5000";
 	
 	public static void main(String[] args)
 			throws IOException, ClassNotFoundException, InterruptedException {
 
 		inputPath = args[0]; // the path of input of wiki csvs
+		//inputPath = "lab2_data";
 		sampleFilename = args[1]; //the name of the sample wiki file for stopwords
+		//sampleFilename = "wiki_00.csv";
 		outputPath = args[2]; //the output path (our /user/cs132g1 directory)
-
+		//outputPath = "out";
+		
 		stopwords = new HashSet<>();
 
 		//controller for our set of jobs
