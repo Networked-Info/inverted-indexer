@@ -31,7 +31,7 @@ public class DocPositionReducer extends Reducer<Text, Text, NullWritable, Text>{
 			String positions = entry.substring(entry.indexOf("[") + 1, entry.indexOf("]"));
 			String[] posArr = positions.split(",");
 			int count = posArr.length;
-			String first = "";
+			String first;
 			if (posArr[0].equals("-1")) {
 				count += 100;
 				first = "-1";
