@@ -35,7 +35,7 @@ public class DocPositionReducer extends Reducer<Text, Text, NullWritable, Text>{
 			if (posArr[0].equals("-1")) {
 				count += 100;
 				first = "-1";
-				if (count > 1) first = posArr[1];
+				if (count > 101) first = posArr[1];
 			} else {
 				first = posArr[0];
 			}
