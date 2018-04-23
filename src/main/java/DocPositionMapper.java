@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -16,14 +17,14 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 public class DocPositionMapper extends Mapper<LongWritable, Text, Text, Text> {
-	
+
 	Set<String> stopwords;
-	
+
 	public void setup(Context context) {
 		Configuration conf = context.getConfiguration();
 		String stopwordsJSON = conf.get("stopwords");
 		Gson gson = new Gson();
-		
+
 		Type swSetType = new TypeToken<HashSet<String>>() {}.getType();
 		stopwords = gson.fromJson(stopwordsJSON, swSetType);
 	}
@@ -31,10 +32,10 @@ public class DocPositionMapper extends Mapper<LongWritable, Text, Text, Text> {
 	@Override
 	public void map(LongWritable key, Text value, Context context)
 			throws IOException, InterruptedException {
-		
+
 		String entry = value.toString();
 		Map<String, ArrayList<String>> wordPositionList = new HashMap<>();
-		
+
 		//grab the docID from before first comma
 		String docID = entry.substring(0, entry.indexOf(","));
 
@@ -42,7 +43,7 @@ public class DocPositionMapper extends Mapper<LongWritable, Text, Text, Text> {
 		int titleIdx = StringUtils.ordinalIndexOf(entry, ",", 2);
 		//content begins after third comma
 		int contentIdx = StringUtils.ordinalIndexOf(entry, ",", 3);
-		
+
 		String[] title = entry.substring(titleIdx + 1, contentIdx).split("[ \\-—\\/.,;:]");
 		for (String word: title) {
 			word = processWord(word);
@@ -52,32 +53,29 @@ public class DocPositionMapper extends Mapper<LongWritable, Text, Text, Text> {
 			}
 		}
 		String content = entry.substring(contentIdx + 1);
-		int n = content.length();
-		int curStart = 0;
-		for (int i = 0; i < n; i++) {
-			char cur = content.charAt(i);
-			if (cur == ' ' || Pattern.matches("\\p{Punct}", String.valueOf(cur))) {
-			    String word = processWord(content.substring(curStart, i));
-			    if (!word.equals("")) {
-					wordPositionList.putIfAbsent(word, new ArrayList<String>());
-					wordPositionList.get(word).add(String.valueOf(i));
-				}
-			    curStart = i+1;
+
+		Matcher m = Pattern.compile("\\w+").matcher(content);
+		while (m.find()) {
+
+			String word = processWord(m.group());
+			if (!word.equals("")) {
+				wordPositionList.putIfAbsent(word, new ArrayList<String>());
+				wordPositionList.get(word).add(String.valueOf(m.start()));
 			}
 		}
-		
-		
+
+
 		// write the inverted index and position
 		for (String word : wordPositionList.keySet()) {
 			ArrayList<String> list = wordPositionList.get(word);
 			String output = docID + ":[" + String.join(", ", list) + "]";
 			context.write(new Text(word), new Text(output));
 		}
-		
+
 		wordPositionList.clear();
-		
+
 	}
-	
+
 	private String processWord(String word) {
 		//use a regex to retain only unicode latin characters
 		word = word.toLowerCase();
