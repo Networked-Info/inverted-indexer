@@ -1,26 +1,19 @@
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.http.util.TextUtils;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
 
 public class DocPositionMapper extends Mapper<LongWritable, Text, Text, Text> {
 	
@@ -58,14 +51,18 @@ public class DocPositionMapper extends Mapper<LongWritable, Text, Text, Text> {
 				wordPositionList.get(word).add("-1");
 			}
 		}
-		String[] content = entry.substring(contentIdx + 1).split("[ \\-—\\/.,;:]");
-		int n = content.length;
+		String content = entry.substring(contentIdx + 1);
+		int n = content.length();
+		int curStart = 0;
 		for (int i = 0; i < n; i++) {
-			String word = content[i];
-			word = processWord(word);
-			if (!word.equals("")) {
-				wordPositionList.putIfAbsent(word, new ArrayList<String>());
-				wordPositionList.get(word).add(String.valueOf(i));
+			char cur = content.charAt(i);
+			if (cur == ' ' || Pattern.matches("\\p{Punct}", String.valueOf(cur))) {
+			    String word = processWord(content.substring(curStart, i));
+			    if (!word.equals("")) {
+					wordPositionList.putIfAbsent(word, new ArrayList<String>());
+					wordPositionList.get(word).add(String.valueOf(i));
+				}
+			    curStart = i+1;
 			}
 		}
 		

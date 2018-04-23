@@ -33,9 +33,9 @@ public class DocPositionReducer extends Reducer<Text, Text, NullWritable, Text>{
 			int count = posArr.length;
 			String first;
 			if (posArr[0].equals("-1")) {
-				count += 100;
-				first = "-1";
+				count += 100; // title appearance counts for 100 times
 				if (count > 101) first = posArr[1];
+				else first = "-1";
 			} else {
 				first = posArr[0];
 			}

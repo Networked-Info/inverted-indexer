@@ -40,11 +40,8 @@ public class Driver {
 			throws IOException, ClassNotFoundException, InterruptedException {
 
 		inputPath = args[0]; // the path of input of wiki csvs
-		//inputPath = "lab2_data";
 		sampleFilename = args[1]; //the name of the sample wiki file for stopwords
-		//sampleFilename = "wiki_00.csv";
 		outputPath = args[2]; //the output path (our /user/cs132g1 directory)
-		//outputPath = "out";
 		
 		stopwords = new HashSet<>();
 
@@ -55,9 +52,7 @@ public class Driver {
 		//(1) scan sample file for word count and extract stopwords from the results
 		ControlledJob wordCountJob = prepareWordCountJob();
 	    jobControl.addJob(wordCountJob);
-	    //(2) removes scrubwords and writes inverted index
-//		ControlledJob indexJob = prepareIndexJob();
-//	    jobControl.addJob(indexJob);
+
 	    //(2) removes scrubwords and writes inverted index and position
 		ControlledJob indexAndPositionJob = prepareIndexAndPositionJob();
 	    jobControl.addJob(indexAndPositionJob);
@@ -103,31 +98,6 @@ public class Driver {
 	    return controlledJob1;
 	}
 
-//	private static ControlledJob prepareIndexJob() throws IOException, ClassNotFoundException, InterruptedException {
-//	    Configuration conf2 = new Configuration();
-//
-//	    String stopwords = processStopwordFiles_new();
-//	    //set the stopwords JSON in the configuration for the Index Job
-//	    //they are retrieved in the mapper
-//	    conf2.set("stopwords", stopwords);
-//
-//	    Job indexjob = Job.getInstance(conf2);  
-//	    indexjob.setJobName("Make Inverted Index");
-//	    indexjob.setJarByClass(Driver.class);
-//		indexjob.setMapperClass(IndexMapper.class);
-//		indexjob.setReducerClass(IndexReducer.class);
-//		indexjob.setOutputKeyClass(Text.class);
-//		indexjob.setOutputValueClass(Text.class);
-//	    TextInputFormat.addInputPath(indexjob, new Path(inputPath));
-//	    indexjob.setOutputFormatClass(TextOutputFormat.class);
-//		TextOutputFormat.setOutputPath(indexjob, new Path(outputPath + "/" + INDEX_PATH));
-//		indexjob.waitForCompletion(true);
-//		
-//	    ControlledJob controlledJob3 = new ControlledJob(conf2);
-//	    controlledJob3.setJob(indexjob);
-//	    
-//	    return controlledJob3;
-//	}
 	
 	private static ControlledJob prepareIndexAndPositionJob() throws IOException, ClassNotFoundException, InterruptedException {
 	    Configuration conf2 = new Configuration();
@@ -157,31 +127,6 @@ public class Driver {
 	    return controlledJob2;
 	}
 	
-//	private static String processStopwordFiles_new() throws FileNotFoundException {
-//		File dir = new File(outputPath + "/" + STOPWORDS_PATH);
-//		File[] directoryListing = dir.listFiles();
-//		if (directoryListing != null) {
-//			for (File child : directoryListing) {
-//				if (!child.getName().equals("_SUCCESS"))
-//					addStopwords_new(child);
-//			}
-//		} else {
-//			System.out.println("Not existing stop word file!");
-//		}
-//		
-//		//convert to JSON for passing to the mapper
-//		Gson gson = new Gson();
-//		String stopwordsJSON = gson.toJson(stopwords);
-//		return stopwordsJSON;
-//	}
-//
-//	private static void addStopwords_new(File file) throws FileNotFoundException {
-//		Scanner input = new Scanner(file);
-//		while (input.hasNext()) {
-//			stopwords.add(input.next());
-//		}
-//		input.close();
-//	}
 	
 	private static String processStopwordFiles_new() throws FileNotFoundException {
 		File dir = new File(outputPath + "/" + STOPWORDS_PATH);
