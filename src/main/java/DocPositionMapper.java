@@ -13,12 +13,19 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.lucene.analysis.core.StopAnalyzer;
+import org.tartarus.snowball.SnowballStemmer;
+import org.tartarus.snowball.ext.englishStemmer;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 public class DocPositionMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 	Set<String> stopwords;
+
+	private Set<?> luceneStopWords = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
+	SnowballStemmer stemmer = new englishStemmer();
 
 	public void setup(Context context) {
 		Configuration conf = context.getConfiguration();
@@ -81,10 +88,13 @@ public class DocPositionMapper extends Mapper<LongWritable, Text, Text, Text> {
 		word = word.toLowerCase();
 
 		//if word is eliminated or a stopword, return empty string
-		if (word.equals("") || stopwords.contains(word) || word.matches(".*[^a-zA-Z].*")) {
+		if (word.length() < 2 || word.equals("") || stopwords.contains(word) || luceneStopWords.contains(word) || word.matches(".*[^a-zA-Z].*")) {
 			return "";
 		}
 
+		stemmer.setCurrent(word);
+		stemmer.stem();
+		word = stemmer.getCurrent();
 		return word;
 	}
 

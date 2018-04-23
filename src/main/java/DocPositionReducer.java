@@ -57,7 +57,7 @@ public class DocPositionReducer extends Reducer<Text, Text, NullWritable, Text>{
 			}
 		}
 		
-		result.put(key.toString(), ja);
+		result.put(key.toString(), ja.subList(0, Math.min(ja.size(), 5000000)));
 		
 		context.write(NullWritable.get(), new Text(result.toString()));
 		
